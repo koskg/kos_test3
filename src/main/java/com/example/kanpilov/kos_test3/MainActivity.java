@@ -3,8 +3,6 @@ package com.example.kanpilov.kos_test3;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -22,29 +20,49 @@ import android.view.View;
          setContentView(new draw4D(this));
      }
 
+    class Figure1 {
+        float fX;
+        float fY;
+    }
+
+    class Kvadrat extends Figure1{
+
+        float sideX;
+        float sideY;
+        float fX2;
+        float fY2;
+
+        public Kvadrat(float x, float y, float sx, float sy){
+            fX=x;
+            fY=y;
+            sideX=sx;
+            sideY=sy;
+            fX2 = x + sx;
+            fY2 = y + sy;
+        }
+    }
+     class Circle extends Figure1{
+         float fRadius;
+
+         public Circle(float x, float y, float r){
+             fX=x;
+             fY=y;
+             fRadius=r;
+         }
+     }
+
      class draw4D extends View{
+
          Paint p, p2;
 
+         Circle krug = new Circle(400,500,50);
+         Kvadrat kvad = new Kvadrat(100,100,200,100);
 
-         float x = 100;
-         float y = 100;
-         int side = 50;
-
-         float x2 = 250;
-         float y2= 300;
-         int sideX2 = 350;
-         int sideY2 = 150;
-
-         RectF rectf;
-         Path path;
-
-         float[][] mass1 = new float[sideX2][sideY2];
 
          boolean drag = false;
          boolean drag2 = false;
          float dragX = 0;
          float dragY = 0;
-
 
          public draw4D(Context context){
              super(context);
@@ -55,23 +73,14 @@ import android.view.View;
              p2  = new Paint();
              p2.setARGB(255, 51, 204, 102);
 
-//             rectf = new RectF(x2, y2, x2+side2+200, y2+side2);
-
-             path = new Path();
-
          }
 
          protected void onDraw (Canvas canvas){
              canvas.drawARGB(80, 102, 204, 255);
-//             canvas.drawRect(x, y, x + side, y + side, p);
 
+             canvas.drawRect(kvad.fX, kvad.fY, kvad.fX2, kvad.fY2, p2);
 
-             path.reset();
-             path.addRect(x2, y2, x2 + sideX2, y2 + sideY2, Path.Direction.CW);
-
-             canvas.drawPath(path, p2);
-             canvas.drawCircle(x, y, side, p);
-
+             canvas.drawCircle(krug.fX, krug.fY, krug.fRadius,p);
 
          }
 
@@ -82,45 +91,46 @@ import android.view.View;
 
              double z;
 
-             z= Math.sqrt( Math.pow((x - evX),2)+Math.pow((y - evY),2));
+             z= Math.sqrt( Math.pow((krug.fX - evX),2)+Math.pow((krug.fY - evY),2));
 
              switch (event.getAction()) {
                  // касание началось
                  case MotionEvent.ACTION_DOWN:
                      // если касание было начато в пределах квадрата
 
-                     if(evX >= x2 && evX <= x2+sideX2 && evY >= y2  && evY <= y2+sideY2){
+                     if (z<=krug.fRadius) {
+                         drag = true;
+
+                         dragX = evX - krug.fX;
+                         dragY = evY - krug.fY;
+                     }
+
+                     if(evX >= kvad.fX && evX <= kvad.fX2 && evY >= kvad.fY  && evY <= kvad.fY2){
                          // включаем режим перетаскивания
                          drag2 = true;
                          // разница между левым верхним углом квадрата и точкой касания
-                         dragX = evX - x2;
-                         dragY = evY - y2;
+                         dragX = evX - kvad.fX;
+                         dragY = evY - kvad.fY;
                      }
 
-                     if (z<=side) {
-
-                         drag = true;
-
-                         dragX = evX - x;
-                         dragY = evY - y;
-                     }
                      break;
                  // тащим
                  case MotionEvent.ACTION_MOVE:
                      // если режим перетаскивания включен
                      if (drag) {
                          // определеяем новые координаты для рисования
-                         x = evX - dragX;
-                         y = evY - dragY;
+                         krug.fX = evX - dragX;
+                         krug.fY = evY - dragY;
                          // перерисовываем экран
                          invalidate();
-
                      }
                      if (drag2) {
                          // определеяем новые координаты для рисования
-                         x2 = evX - dragX;
-                         y2 = evY - dragY;
+                         kvad.fX = evX - dragX;
+                         kvad.fY = evY - dragY;
 
+                         kvad.fX2 = evX - dragX + kvad.sideX;
+                         kvad.fY2 = evY - dragY + kvad.sideY;
                          // перерисовываем экран
                          invalidate();
 //                         if(x >= x2 && x <= (x2+side2+200) && y >= y2 && y <= (y2 + side2)){
